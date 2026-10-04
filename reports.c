@@ -1,10 +1,4 @@
-/*
- * reports.c - Reports module (Role 4)
- *
- * Reads data from the other modules and prints summary reports.
- * Employee, supplier and asset data are passed in by main.c.
- * Budget data is read from the shared budgets[] array (budget.h).
- */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "reports.h"
