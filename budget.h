@@ -12,7 +12,7 @@ typedef struct {
     int exceeded;   /* 1 = EXCEEDED, 0 = WITHIN BUDGET */
 } Budget;
 
-/* Shared so the Reports module (Role 4) can read them */
+/* Shared so the Reports module can read them */
 extern Budget budgets[MAX_DEPARTMENTS];
 extern int budgetCount;
 

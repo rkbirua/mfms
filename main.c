@@ -1,52 +1,19 @@
 /*
  * main.c - Municipal Financial Management System (MFMS)
- * Role 4: menu loop that connects all the modules.
+ * Menu loop that connects all the modules.
  *
  * main() owns the employee, supplier and asset arrays and passes them
  * to the functions written by the other group members.
  * Budget data lives inside budget.c, so budgetMenu() needs no arguments.
  */
 #include <stdio.h>
-#include <stdlib.h>
+#include "validation.h"
 #include "employees.h"
 #include "budget.h"
 #include "suppliers.h"
 #include "assets.h"
 #include "reports.h"
 
-/* Reads a menu choice between min and max. Re-asks until valid. */
-static int readMenuChoice(int min, int max)
-{
-    char line[100];
-    char *end;
-    long value;
-
-    printf("Enter your choice: ");
-    while (1)
-    {
-        if (fgets(line, sizeof(line), stdin) == NULL)
-        {
-            return max; /* input closed: leave the menu */
-        }
-        if (line[0] == '\n')
-        {
-            continue; /* ignore blank lines (e.g. left over from scanf) */
-        }
-        value = strtol(line, &end, 10);
-        if (end == line || (*end != '\n' && *end != '\0'))
-        {
-            printf("Invalid input. Please enter a number.\nEnter your choice: ");
-            continue;
-        }
-        if (value < min || value > max)
-        {
-            printf("Invalid choice. Enter a number from %d to %d.\nEnter your choice: ",
-                   min, max);
-            continue;
-        }
-        return (int)value;
-    }
-}
 
 static void displayMenu(void)
 {

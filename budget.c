@@ -1,49 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 #include "budget.h"
+#include "validation.h"
 
 Budget budgets[MAX_DEPARTMENTS];
 int budgetCount = 0;
 
 /* ---------- helpers ---------- */
-
-static void clearInputBuffer(void) {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF) { }
-}
-
-static double readNonNegativeDouble(const char *prompt) {
-    double value;
-    while (1) {
-        printf("%s", prompt);
-        if (scanf("%lf", &value) != 1) {
-            printf("Invalid input. Please enter a number.\n");
-            clearInputBuffer();
-        } else if (value < 0) {
-            printf("Value cannot be negative.\n");
-            clearInputBuffer();
-        } else {
-            clearInputBuffer();
-            return value;
-        }
-    }
-}
-
-static void readName(const char *prompt, char *dest, int size) {
-    while (1) {
-        printf("%s", prompt);
-        if (fgets(dest, size, stdin) == NULL) {
-            strcpy(dest, "Unknown");
-            return;
-        }
-        dest[strcspn(dest, "\n")] = '\0';
-        if (strlen(dest) == 0) {
-            printf("Department name cannot be empty.\n");
-        } else {
-            return;
-        }
-    }
-}
 
 static void updateStatus(Budget *b) {
     b->remaining = b->allocated - b->spent;
@@ -52,6 +15,8 @@ static void updateStatus(Budget *b) {
 
 /* ---------- main functions ---------- */
 
+/* Validate a temporary record completely before updating shared storage.
+ * EOF cancels the operation, so no partial record is inserted. */
 void addBudget(void) {
     if (budgetCount >= MAX_DEPARTMENTS) {
         printf("Budget list is full.\n");
@@ -59,7 +24,7 @@ void addBudget(void) {
     }
 
     Budget b;
-    readName("Department name: ", b.department, MAX_NAME_LEN);
+    if (!readText("Department name: ", b.department, MAX_NAME_LEN)) return;
 
     for (int i = 0; i < budgetCount; i++) {
         if (strcmp(budgets[i].department, b.department) == 0) {
@@ -68,8 +33,8 @@ void addBudget(void) {
         }
     }
 
-    b.allocated = readNonNegativeDouble("Allocated budget: ");
-    b.spent = readNonNegativeDouble("Amount spent: ");
+    if (!readNonNegativeDouble("Allocated budget: ", &b.allocated)) return;
+    if (!readNonNegativeDouble("Amount spent: ", &b.spent)) return;
     updateStatus(&b);
 
     budgets[budgetCount++] = b;
@@ -113,14 +78,7 @@ void budgetMenu(void) {
         printf("2. Display all budgets\n");
         printf("3. Show overspent departments\n");
         printf("4. Back\n");
-        printf("Choice: ");
-
-        if (scanf("%d", &choice) != 1) {
-            clearInputBuffer();
-            choice = 0;
-        } else {
-            clearInputBuffer();
-        }
+        choice = readMenuChoice(1, 4);
 
         switch (choice) {
             case 1: addBudget(); break;

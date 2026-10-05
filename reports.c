@@ -1,47 +1,14 @@
 
 #include <stdio.h>
-#include <stdlib.h>
+#include "validation.h"
 #include "reports.h"
 #include "employees.h"
 #include "budget.h"
 #include "suppliers.h"
 #include "assets.h"
 
-/* Reads a menu choice between min and max. Re-asks until valid. */
-static int readMenuChoice(int min, int max)
-{
-    char line[100];
-    char *end;
-    long value;
 
-    printf("Enter your choice: ");
-    while (1)
-    {
-        if (fgets(line, sizeof(line), stdin) == NULL)
-        {
-            return max; /* input closed: leave the menu */
-        }
-        if (line[0] == '\n')
-        {
-            continue; /* ignore blank lines (e.g. left over from scanf) */
-        }
-        value = strtol(line, &end, 10);
-        if (end == line || (*end != '\n' && *end != '\0'))
-        {
-            printf("Invalid input. Please enter a number.\nEnter your choice: ");
-            continue;
-        }
-        if (value < min || value > max)
-        {
-            printf("Invalid choice. Enter a number from %d to %d.\nEnter your choice: ",
-                   min, max);
-            continue;
-        }
-        return (int)value;
-    }
-}
-
-/* Total pay for one employee: basic salary + allowances. */
+/* Read-only pay calculation used by employee summary statistics. */
 static double totalSalary(Employee e)
 {
     return (double)e.basicSalary + (double)e.housingAllowance

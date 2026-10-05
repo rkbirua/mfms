@@ -2,32 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 #include "employees.h"
+#include "validation.h"
+#include <limits.h>
 
-static float readNonNegativeFloat(const char *prompt) {
-    float value;
-    while (1) {
-        printf("%s", prompt);
-        if (scanf("%f", &value) == 1 && value >= 0) {
-            getchar();
-            return value;
-        }
-        printf("Invalid input. Enter a number that is 0 or more.\n");
-        while (getchar() != '\n');
-    }
-}
-
-static void readNonEmptyString(const char *prompt, char *dest, int size) {
-    while (1) {
-        printf("%s", prompt);
-        fgets(dest, size, stdin);
-        dest[strcspn(dest, "\n")] = '\0';
-        if (strlen(dest) > 0) {
-            return;
-        }
-        printf("This field cannot be empty.\n");
-    }
-}
-
+/* Validate a temporary record completely before updating shared storage.
+ * EOF cancels the operation, so no partial record is inserted. */
 void addEmployee(Employee list[], int *count) {
     if (*count >= MAX_EMPLOYEES) {
         printf("Employee list is full.\n");
@@ -37,11 +16,11 @@ void addEmployee(Employee list[], int *count) {
     Employee e;
     e.id = *count + 1;
 
-    readNonEmptyString("Enter employee name: ", e.name, sizeof(e.name));
-    readNonEmptyString("Enter department: ", e.department, sizeof(e.department));
-    e.basicSalary = readNonNegativeFloat("Enter basic salary: ");
-    e.housingAllowance = readNonNegativeFloat("Enter housing allowance: ");
-    e.transportAllowance = readNonNegativeFloat("Enter transport allowance: ");
+    if (!readText("Enter employee name: ", e.name, sizeof(e.name))) return;
+    if (!readText("Enter department: ", e.department, sizeof(e.department))) return;
+    if (!readNonNegativeFloat("Enter basic salary: ", &e.basicSalary)) return;
+    if (!readNonNegativeFloat("Enter housing allowance: ", &e.housingAllowance)) return;
+    if (!readNonNegativeFloat("Enter transport allowance: ", &e.transportAllowance)) return;
 
     list[*count] = e;
     (*count)++;
@@ -63,9 +42,7 @@ void displayEmployees(Employee list[], int count) {
 
 void searchEmployee(Employee list[], int count) {
     char query[50];
-    printf("Enter employee name to search: ");
-    fgets(query, sizeof(query), stdin);
-    query[strcspn(query, "\n")] = '\0';
+    if (!readText("Enter employee name to search: ", query, sizeof query)) return;
 
     for (int i = 0; i < count; i++) {
         if (strcmp(list[i].name, query) == 0) {
@@ -80,17 +57,11 @@ void searchEmployee(Employee list[], int count) {
 
 void calculateSalary(Employee list[], int count) {
     int id;
-    printf("Enter employee ID: ");
-    if (scanf("%d", &id) != 1) {
-        printf("Invalid ID.\n");
-        while (getchar() != '\n');
-        return;
-    }
-    getchar();
+    if (!readIntRange("Enter employee ID: ", 1, INT_MAX, &id)) return;
 
     for (int i = 0; i < count; i++) {
         if (list[i].id == id) {
-            float total = list[i].basicSalary + list[i].housingAllowance + list[i].transportAllowance;
+            double total = (double)list[i].basicSalary + list[i].housingAllowance + list[i].transportAllowance;
             printf("Employee: %s\n", list[i].name);
             printf("Basic Salary: N$%.2f\n", list[i].basicSalary);
             printf("Housing Allowance: N$%.2f\n", list[i].housingAllowance);

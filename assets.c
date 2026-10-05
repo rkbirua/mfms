@@ -1,8 +1,11 @@
 // assets.c
 #include <stdio.h>
 #include <string.h>
+#include "validation.h"
 #include "assets.h"
 
+/* Validate a temporary record completely before updating shared storage.
+ * EOF cancels the operation, so no partial record is inserted. */
 void addAsset(Asset list[], int *count) {
     if (*count >= MAX_ASSETS) {
         printf("Asset list is full.\n");
@@ -12,25 +15,15 @@ void addAsset(Asset list[], int *count) {
     Asset a;
     a.id = *count + 1;
 
-    printf("Enter asset name: ");
-    fgets(a.name, sizeof(a.name), stdin);
-    a.name[strcspn(a.name, "\n")] = '\0';
+    if (!readText("Enter asset name: ", a.name, sizeof(a.name))) return;
 
-    printf("Enter asset type (e.g. Vehicle, Building): ");
-    fgets(a.type, sizeof(a.type), stdin);
-    a.type[strcspn(a.type, "\n")] = '\0';
+    if (!readText("Enter asset type (e.g. Vehicle, Building): ", a.type, sizeof(a.type))) return;
 
-    printf("Enter purchase value: ");
-    scanf("%f", &a.purchaseValue);
-    getchar(); // clear leftover newline
+    if (!readNonNegativeFloat("Enter purchase value: ", &a.purchaseValue)) return;
 
-    printf("Enter department: ");
-    fgets(a.department, sizeof(a.department), stdin);
-    a.department[strcspn(a.department, "\n")] = '\0';
+    if (!readText("Enter department: ", a.department, sizeof(a.department))) return;
 
-    printf("Enter condition (e.g. Good, Fair, Poor): ");
-    fgets(a.condition, sizeof(a.condition), stdin);
-    a.condition[strcspn(a.condition, "\n")] = '\0';
+    if (!readText("Enter condition (e.g. Good, Fair, Poor): ", a.condition, sizeof(a.condition))) return;
 
     list[*count] = a;
     (*count)++;
@@ -52,9 +45,7 @@ void displayAssets(Asset list[], int count) {
 
 void searchAsset(Asset list[], int count) {
     char query[50];
-    printf("Enter asset name to search: ");
-    fgets(query, sizeof(query), stdin);
-    query[strcspn(query, "\n")] = '\0';
+    if (!readText("Enter asset name to search: ", query, sizeof(query))) return;
 
     for (int i = 0; i < count; i++) {
         if (strcmp(list[i].name, query) == 0) {
